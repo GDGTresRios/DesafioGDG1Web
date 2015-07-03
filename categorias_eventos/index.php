@@ -1,3 +1,23 @@
+<?php
+try {
+    $dados = '';
+
+    require '../global/TConnection.class.php';
+    $db  = TConnection::open();
+    $qry = $db->query("SELECT * FROM categorias_eventos");
+    while ($r   = $qry->fetchObject()) {
+        $dados .= '<tr>
+                        <td>' . $r->id . '</td>
+                        <td>' . $r->nome . '</td>
+                        <td><a href="javascript:void(0)" data-id="' . $r->id . '" class="lkEditar"><em class="glyphicon glyphicon-pencil"></em></a></td>
+                        <td><a href="#" class="lkExcluir"><em class="glyphicon glyphicon-trash"></em></a></td>
+                    </tr>';
+    }
+    $db = null;
+} catch (PDOException $e) {
+    echo $e->getMessage();
+}
+?>
 <!DOCTYPE html>
 <html>
     <head>
@@ -28,11 +48,10 @@
                 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
                     <div class="container-fluid">
                         <div class="col-sm-11">
-                            <h1 class="page-header">Categorias de Eventos
-                            </h1>
+                            <h1 class="page-header">Categorias de Eventos</h1>
                         </div>
                         <div class="col-sm-1 pull-right">
-                            <a href="javascript:void(0)" id="btIncluir"  title="Incluir" class="btn btn-success">+ Incluir</a>
+                            <a href="javascript:void(0)" id="btIncluir"  title="Incluir" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> &nbsp;Incluir</a>
                         </div>
                     </div>
 
@@ -48,12 +67,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Guilherme Przewodowski</td>
-                                    <td><a href="javascript:void(0)" data-id="1" class="lkEditar"><em class="glyphicon glyphicon-pencil"></em></a></td>
-                                    <td><a href="#" class="lkExcluir"><em class="glyphicon glyphicon-trash"></em></a></td>
-                                </tr>
+                                <?php echo $dados; ?>
                             </tbody>
                         </table>
                     </div>
