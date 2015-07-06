@@ -59,6 +59,7 @@ class TImagem {
 
                 $this->nome_foto = $imagem_nome;
 
+                mkdir('../tmp');
                 //Caminho de onde a imagem ficará
                 $this->localizacaoFoto = '../tmp/' . $imagem_nome;
 
