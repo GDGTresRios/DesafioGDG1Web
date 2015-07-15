@@ -2,17 +2,13 @@
 $id = (isset($_GET['id'])) ? $_GET['id'] : 0;
 
 $fk_categoria        = 0;
+$fk_colaborador      = 0;
 $nome                = '';
-$logo                = '';
 $descricao           = '';
 $descricao_detalhada = '';
-$endereco_virtual    = '';
-$email               = '';
-$telefone            = '';
-$endereco            = '';
-$patrocinador        = 0;
-$palestrante         = 0;
-$expositor           = 0;
+$data_hora           = '';
+$duracao             = '';
+$local               = '';
 
 require '../global/TConnection.class.php';
 $db = TConnection::open();
@@ -22,42 +18,32 @@ if ($id) {
         $qry = $db->query("SELECT   
                                 id,
                                 fk_categoria,
+                                fk_colaborador
                                 nome, 
                                 descricao,
-                                logo,
                                 descricao_detalhada,
-                                endereco_virtual,
-                                email,
-                                telefone,
-                                endereco,
-                                patrocinador,
-                                palestrante,
-                                expositor
-                            FROM colaboradores WHERE id=$id");
+                                data_hora,
+                                duracao,
+                                local
+                            FROM eventos WHERE id=$id");
         if ($r   = $qry->fetchObject()) {
             $fk_categoria        = $r->fk_categoria;
+            $fk_colaborador      = $r->fk_colaborador;
             $nome                = $r->nome;
             $descricao           = $r->descricao;
             $logo                = $r->logo;
             $descricao_detalhada = $r->descricao_detalhada;
-            $endereco_virtual    = $r->endereco_virtual;
-            $email               = $r->email;
-            $telefone            = $r->telefone;
+            $data_hora           = $r->data_hora;
+            $duracao             = $r->duracao;
+            $local               = $r->local;
             $endereco            = $r->endereco;
-            $patrocinador        = $r->patrocinador;
-            $palestrante         = $r->palestrante;
-            $expositor           = $r->expositor;
         }
     } catch (PDOException $e) {
         echo $e->getMessage();
     }
 }
 
-if ((!$logo) || ($logo == '')) {
-    $logo = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgdmlld0JveD0iMCAwIDE0MCAxNDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzE0MHgxNDAKQ3JlYXRlZCB3aXRoIEhvbGRlci5qcyAyLjYuMC4KTGVhcm4gbW9yZSBhdCBodHRwOi8vaG9sZGVyanMuY29tCihjKSAyMDEyLTIwMTUgSXZhbiBNYWxvcGluc2t5IC0gaHR0cDovL2ltc2t5LmNvCi0tPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PCFbQ0RBVEFbI2hvbGRlcl8xNGU2MGNiYmEyOCB0ZXh0IHsgZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQgfSBdXT48L3N0eWxlPjwvZGVmcz48ZyBpZD0iaG9sZGVyXzE0ZTYwY2JiYTI4Ij48cmVjdCB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjQzLjUiIHk9Ijc0LjgiPjE0MHgxNDA8L3RleHQ+PC9nPjwvZz48L3N2Zz4=";
-}
-
-$qry        = $db->query("SELECT * FROM categorias_colaboradores");
+$qry        = $db->query("SELECT * FROM categorias_eventos");
 $categorias = '<option value="0"></option>';
 while ($r          = $qry->fetchObject()) {
     $categorias .= '<option value="' . $r->id . '"';
@@ -66,6 +52,17 @@ while ($r          = $qry->fetchObject()) {
     }
     $categorias .= ' > ' . $r->nome . '</option>';
 }
+
+$qry           = $db->query("SELECT * FROM colaboradores");
+$colaboradores = '<option value="0"></option>';
+while ($r             = $qry->fetchObject()) {
+    $colaboradores .= '<option value="' . $r->id . '"';
+    if (($fk_colaborador > 0) && ($fk_colaborador == $r->id)) {
+        $colaboradores .= 'selected';
+    }
+    $colaboradores .= ' > ' . $r->nome . '</option>';
+}
+
 
 $db = null;
 ?>
@@ -85,6 +82,14 @@ $db = null;
                         <div class="controls">
                             <select id="fk_categoria" name="fk_categoria" required>
                                 <?php echo $categorias; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="fk_colaborador">Colaborador <span class="required">*</span>:</label>
+                        <div class="controls">
+                            <select id="fk_colaborador" name="fk_colaborador" required>
+                                <?php echo $colaboradores; ?>
                             </select>
                         </div>
                     </div>
@@ -109,43 +114,23 @@ $db = null;
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="endereco_virtual">Endereço Virtual:</label>
+                        <label class="control-label" for="data_hora">Horário:</label>
                         <div class="controls">
-                            <input type="text" id="endereco_virtual" name="endereco_virtual" value="<?php echo $endereco_virtual; ?>">
+                            <input type="date" id="data_hora" name="data_hora" value="<?php echo $data_hora; ?>">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="email">E-mail:</label>
+                        <label class="control-label" for="duracao">Duração:</label>
                         <div class="controls">
-                            <input type="text" id="email" name="email" value="<?php echo $email; ?>">
+                            <input type="time" id="duracao" name="duracao" value="<?php echo $duracao; ?>">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="telefone">Telefone:</label>
+                        <label class="control-label" for="local">Local:</label>
                         <div class="controls">
-                            <input type="text" id="telefone" name="telefone" value="<?php echo $telefone; ?>">
+                            <input type="text" id="local" name="local" value="<?php echo $local; ?>">
                         </div>
                     </div>
-                    <div class="control-group">
-                        <label class="control-label" for="endereco">Endereço:</label>
-                        <div class="controls">
-                            <input type="text" id="endereco" name="endereco" value="<?php echo $endereco; ?>">
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <div class="controls">
-                            <input type="checkbox" id="patrocinador" name="patrocinador" value="1" <?php echo ($patrocinador) ? 'checked' : ''; ?>> Patrocinador
-                            <input type="checkbox" id="palestrante" name="palestrante" value="1" <?php echo ($palestrante) ? 'checked' : ''; ?>> Palestrante
-                            <input type="checkbox" id="expositor" name="expositor" value="1" <?php echo ($expositor) ? 'checked' : ''; ?>> Expositor
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="nome">Logo:</label>
-                        <div class="controls">
-                            <input type="file" id="logo" name="logo">
-                        </div>
-                    </div>
-                    <img class="img-thumbnail" src="<?php echo $logo; ?>" />
 
                     <br />
                     <div id="padrao" class="modal-footer">
